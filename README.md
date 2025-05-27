@@ -14,7 +14,7 @@ Expense tracker in Python Flask supports following actions
 
 > You must have python3 installed on your system before running
 
-> used python 3.10.2 for this project
+> Python 3.8+ is recommended for this project
 
 ### Create virtual environment and activate it
 
