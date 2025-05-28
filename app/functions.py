@@ -35,11 +35,14 @@ def get_base64_decode(buffer):
 
 
 def get_pie_chart(data:list[tuple[str,typing.Union[int, float]]], title:str):
-    pie_data = [x[1] for x in data]
+    pie_data = [float(x[1]) for x in data]
 
+    if not pie_data or sum(pie_data) == 0:
+        return base64.b64encode(b"").decode("utf-8")
+    
     percentages = [x*100/sum(pie_data) for x in pie_data]
     labels = [f"{data[i][0]}({data[i][1]}) - {percentages[i]:.2f}%" for i in range(len(data))]
-    explode = [0.001*x for x in percentages]
+    explode = [0.001 * float(x) for x in percentages]
 
     data_buf = io.BytesIO()
     fig = Figure(figsize=(10,4))

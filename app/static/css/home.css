@@ -79,7 +79,48 @@
     background-color: #373737 !important;
 }
 
+
+
+.charts-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin: 20px 10px;
+}
+
+.chart-card {
+    background-color: #444;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    width: calc(50% - 20px);
+    box-sizing: border-box;
+}
+
+.chart-card h2 {
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 20px;
+}
+
+.chart {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    overflow: hidden;
+}
+
+.chart img {
+    max-width: 100%;
+    height: auto;
+}
+
 @media (max-width:700px) {
+    .chart-card {
+        width: 100%;
+    }
+
     #expense-card > #top {
         flex-direction: column;
     }
@@ -95,3 +136,5 @@
         max-width: 850px;
     }
 }
+
+

@@ -1,10 +1,12 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash, Response, stream_with_context
 
 from ..app_functions import get_current_user, get_current_user_balance, user_login_required
-from ..functions import generate_string
+from ..functions import generate_string, get_pie_chart, get_line_chart
 from ..forms import NewStatementForm, StatementEditForm
 from ..db import db, Statements, User
 from sqlalchemy import func
+import datetime
+
 
 
 home = Blueprint("Home", __name__)
@@ -24,10 +26,50 @@ def home_index():
     user_details["statements"] = list(
         {"desc":x.description, "amount":x.amount, "at":x.operation_time, "id": x.statement_id} for x in statements
     )
-
+    
+    # Generate data for pie chart (Income vs Expense)
+    total_expense = Statements.query.with_entities(func.sum(Statements.amount)).filter(
+        Statements.user_id == user.id, Statements.amount < 0).first()[0]
+    if total_expense is None:
+        total_expense = 0.0
+    total_expense = abs(total_expense)
+    
+    total_income = Statements.query.with_entities(func.sum(Statements.amount)).filter(
+        Statements.user_id == user.id, Statements.amount >= 0).first()[0]
+    if total_income is None:
+        total_income = 0.0
+    
+    pie_data = [("Income", total_income), ("Expense", total_expense)]
+    pie_chart = get_pie_chart(pie_data, "Income vs Expense")
+    
+    # Generate data for line chart (Last 7 days transactions)
+    today = datetime.datetime.now().date()
+    seven_days_ago = today - datetime.timedelta(days=7)
+    
+    daily_transactions = []
+    for i in range(7):
+        day = seven_days_ago + datetime.timedelta(days=i+1)
+        day_str = day.strftime("%Y-%m-%d")
+        
+        # Get sum of transactions for this day
+        day_total = Statements.query.with_entities(func.sum(Statements.amount)).filter(
+            Statements.user_id == user.id,
+            func.date(Statements.operation_time) == day
+        ).first()[0]
+        
+        if day_total is None:
+            day_total = 0.0
+            
+        daily_transactions.append((day_str, day_total))
+    
+    line_chart = get_line_chart(daily_transactions, "Date", "Amount", "Transactions (Last 7 Days)")
+    
+    
     return render_template(
         "home/index.html",
-        user= user_details
+        user=user_details,
+        pie_chart=pie_chart,
+        line_chart=line_chart
     )
 
 @home.route("/new", methods=("GET","POST"))
